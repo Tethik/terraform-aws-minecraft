@@ -1,0 +1,54 @@
+{
+    "variables": {
+        "aws_access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
+        "aws_secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
+        "region":         "us-east-1"
+    },
+    "builders": [{
+      "type": "amazon-ebs",
+      "access_key": "{{user `aws_access_key`}}",
+      "secret_key": "{{user `aws_secret_key`}}",
+      "region": "{{user `aws_region`}}",
+      "source_ami_filter": {
+        "filters": {
+          "virtualization-type": "hvm",
+          "name": "ubuntu/images/*ubuntu-xenial-16.04-amd64-server-*",
+          "root-device-type": "ebs"
+        },
+        "owners": ["099720109477"],
+        "most_recent": true
+      },
+      "instance_type": "t2.micro",
+      "ssh_username": "ubuntu",
+      "ami_name": "ubuntu-minecraft-forge-1.12"
+    }],
+    "provisioners": [
+      {
+          "type": "shell",
+          "inline":[
+              "sudo pip install awscli"
+          ]
+      },
+      {
+          "type": "shell",
+          "inline": [
+            "sudo add-apt-repository ppa:webupd8team/java -y",
+            "sudo apt-get update",
+            "echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections",
+            "sudo apt-get install oracle-java8-installer"
+          ]
+      },
+      {
+        "type": "file",
+        "source": "./files/eula.txt",
+        "destination": "/home/ubuntu/"
+      },
+      {
+        "type": "shell",
+        "inline": [
+          "wget https://files.minecraftforge.net/maven/net/minecraftforge/forge/1.12.2-14.23.1.2555/forge-1.12.2-14.23.1.2555-installer.jar",
+          "java -jar forge*-installer.jar --installServer"
+        ]
+      }
+    ]
+  }
