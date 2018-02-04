@@ -2,7 +2,7 @@
     "variables": {
         "aws_access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
         "aws_secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
-        "region":         "us-east-1"
+        "region":         "eu-central-1"
     },
     "builders": [{
       "type": "amazon-ebs",
@@ -25,17 +25,13 @@
     "provisioners": [
       {
           "type": "shell",
-          "inline":[
-              "sudo pip install awscli"
-          ]
-      },
-      {
-          "type": "shell",
-          "inline": [
+          "inline": [            
             "sudo add-apt-repository ppa:webupd8team/java -y",
             "sudo apt-get update",
+            "sudo apt install python-pip -y",
+            "sudo pip install awscli",
             "echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections",
-            "sudo apt-get install oracle-java8-installer"
+            "sudo apt-get install oracle-java8-installer -y"
           ]
       },
       {
@@ -44,10 +40,35 @@
         "destination": "/home/ubuntu/"
       },
       {
+        "type": "file",
+        "source": "./files/start_server.sh",
+        "destination": "/home/ubuntu/"
+      },
+      {
         "type": "shell",
         "inline": [
-          "wget https://files.minecraftforge.net/maven/net/minecraftforge/forge/1.12.2-14.23.1.2555/forge-1.12.2-14.23.1.2555-installer.jar",
-          "java -jar forge*-installer.jar --installServer"
+          "sudo adduser --system --home /srv/minecraft-server minecraft",
+          "sudo addgroup --system minecraft",
+          "sudo adduser ubuntu minecraft",
+          "cd /srv/minecraft-server",
+          "sudo mv /home/ubuntu/eula.txt .",
+          "sudo mv /home/ubuntu/start_server.sh .",
+          "sudo chown -R minecraft /srv/minecraft-server",
+          "sudo chgrp -R minecraft /srv/minecraft-server",
+          "sudo -u minecraft wget https://files.minecraftforge.net/maven/net/minecraftforge/forge/1.12.2-14.23.1.2555/forge-1.12.2-14.23.1.2555-installer.jar",
+          "sudo -u minecraft java -jar forge*-installer.jar --installServer"          
+        ]
+      },
+      {
+        "type": "file",
+        "source": "./files/minecraft-forge.service",
+        "destination": "/home/ubuntu/"
+      },
+      {
+        "type": "shell",
+        "inline": [
+          "sudo mv /home/ubuntu/minecraft-forge.service /etc/systemd/system/",
+          "sudo systemctl enable minecraft-forge"        
         ]
       }
     ]

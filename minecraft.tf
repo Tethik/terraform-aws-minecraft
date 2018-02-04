@@ -27,7 +27,7 @@ data "aws_ami" "ubuntu" {
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*"]
+    values = ["ubuntu-minecraft-forge-1.12"]
   }
 
   filter {
@@ -35,7 +35,36 @@ data "aws_ami" "ubuntu" {
     values = ["hvm"]
   }
 
-  owners = ["099720109477"] # Canonical
+  # owners = ["099720109477"] # Canonical
+}
+
+resource "aws_security_group" "minecraft_server_svg" {
+  name = "minecraft_server_svg"
+  description = "Security Group for minecraft server (ssh, minecraft)"
+
+  # Minecraft Port
+  ingress {
+    from_port = 25565
+    to_port = 25565
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # SSH access from anywhere
+  ingress {
+    from_port = 22
+    to_port = 22
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Allow any outband connections.
+  egress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    cidr_blocks     = ["0.0.0.0/0"]
+  }
 }
 
 
@@ -43,19 +72,56 @@ data "aws_ami" "ubuntu" {
 resource "aws_instance" "server" {
   ami           = "${data.aws_ami.ubuntu.id}"
   instance_type = "t2.micro"
-#   key_name      = "${aws_key_pair.dev.key_name}"
+  key_name      = "${aws_key_pair.dev.key_name}"
+  security_groups = ["${aws_security_group.minecraft_server_svg.name}"]
 
-  provisioner "local-exec" {
-    command = "echo ${aws_instance.server.public_ip} && echo ${aws_instance.server.public_ip} > ip_address.txt"
+  tags = {
+    Name = "${var.server_name} server"
+  } 
+
+  provisioner "remote-exec" {
+    inline = [
+      "aws configure set aws_access_key_id ${aws_iam_access_key.admin_user.id}",
+      "aws configure set aws_secret_access_key ${aws_iam_access_key.admin_user.secret}",
+      "aws s3 sync s3://tf-minecraft-${var.server_name}-files /home/ubuntu/minecraft-server",
+      "sudo chown -R minecraft /home/ubuntu/minecraft-server",
+      "sudo mv /home/ubuntu/minecraft-server/* /src/minecraft-server/",
+      "sudo service minecraft-server start"
+    ]
+    connection {
+      type     = "ssh"
+      user     = "ubuntu"
+      # private_key = "${file("~/.ssh/id_rsa")}"
+    }
   }
+
+  provisioner "remote-exec" {
+    when = "destroy"
+    inline = [
+      "aws s3 sync /src/minecraft-server s3://tf-minecraft-${var.server_name}-files"
+    ]
+    connection {
+      type     = "ssh"
+      user     = "ubuntu"
+      # private_key = "${file("~/.ssh/id_rsa")}"
+    }
+  }
+
+  # provisioner "local-exec" {
+  #   command = "echo ${aws_instance.server.public_ip} && echo ${aws_instance.server.public_ip} > ip_address.txt"
+  # }
   
-  provisioner "local-exec" {
-    command = "echo ${aws_iam_access_key.admin_user.id} && echo ${aws_iam_access_key.admin_user.id} > access-key.txt"
-  }
+  # provisioner "local-exec" {
+  #   command = "echo ${aws_iam_access_key.admin_user.id} && echo ${aws_iam_access_key.admin_user.id} > access-key.txt"
+  # }
 
-  provisioner "local-exec" {
-    command = "echo ${aws_iam_access_key.admin_user.secret} && echo ${aws_iam_access_key.admin_user.secret} > secret-key.txt"
-  }
+  # provisioner "local-exec" {
+  #   command = "echo ${aws_iam_access_key.admin_user.secret} && echo ${aws_iam_access_key.admin_user.secret} > secret-key.txt"
+  # }
+
+  # aws configure set aws_access_key_id default_access_key
+  # aws configure set aws_secret_access_key default_secret_key
+  # aws configure set region ${aws.region} # eu-central-1
 }
 
 resource "aws_s3_bucket" "server_files" {

@@ -1,0 +1,15 @@
+[Unit] 
+Description=start and stop the minecraft-server 
+
+
+[Service]
+WorkingDirectory=/srv/minecraft-server
+User=minecraft
+Group=minecraft
+Restart=on-failure
+RestartSec=20 5
+ExecStart=/srv/minecraft-server/start_server.sh
+
+
+[Install]
+WantedBy=multi-user.target

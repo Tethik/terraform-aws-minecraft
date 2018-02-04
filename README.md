@@ -1,2 +1,2 @@
 # terraform-minecraft
-Terraform scripts to launch an on-demand minecraft server.
+Terraform and packer script to launch an on-demand minecraft server.
