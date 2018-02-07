@@ -3,12 +3,12 @@ Description=start and stop the minecraft-server
 
 
 [Service]
-WorkingDirectory=/srv/minecraft-server
-User=minecraft
-Group=minecraft
+WorkingDirectory=/home/ubuntu
+User=ubuntu
+Group=ubuntu
 Restart=on-failure
 RestartSec=20 5
-ExecStart=/srv/minecraft-server/start_server.sh
+ExecStart=/home/ubuntu/start_server.sh
 
 
 [Install]

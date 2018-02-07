@@ -47,16 +47,8 @@
       {
         "type": "shell",
         "inline": [
-          "sudo adduser --system --home /srv/minecraft-server minecraft",
-          "sudo addgroup --system minecraft",
-          "sudo adduser ubuntu minecraft",
-          "cd /srv/minecraft-server",
-          "sudo mv /home/ubuntu/eula.txt .",
-          "sudo mv /home/ubuntu/start_server.sh .",
-          "sudo chown -R minecraft /srv/minecraft-server",
-          "sudo chgrp -R minecraft /srv/minecraft-server",
-          "sudo -u minecraft wget https://files.minecraftforge.net/maven/net/minecraftforge/forge/1.12.2-14.23.1.2555/forge-1.12.2-14.23.1.2555-installer.jar",
-          "sudo -u minecraft java -jar forge*-installer.jar --installServer"          
+          "wget https://files.minecraftforge.net/maven/net/minecraftforge/forge/1.12.2-14.23.1.2555/forge-1.12.2-14.23.1.2555-installer.jar",
+          "java -jar forge*-installer.jar --installServer"          
         ]
       },
       {
