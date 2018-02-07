@@ -74,6 +74,7 @@ resource "aws_instance" "server" {
   instance_type = "t2.micro"
   key_name      = "${aws_key_pair.dev.key_name}"
   security_groups = ["${aws_security_group.minecraft_server_svg.name}"]
+  count = 0
 
   tags = {
     Name = "${var.server_name} server"
@@ -83,50 +84,32 @@ resource "aws_instance" "server" {
     inline = [
       "aws configure set aws_access_key_id ${aws_iam_access_key.admin_user.id}",
       "aws configure set aws_secret_access_key ${aws_iam_access_key.admin_user.secret}",
-      "aws s3 sync s3://tf-minecraft-${var.server_name}-files /home/ubuntu/minecraft-server",
-      "sudo chown -R minecraft /home/ubuntu/minecraft-server",
-      "sudo mv /home/ubuntu/minecraft-server/* /src/minecraft-server/",
-      "sudo service minecraft-server start"
+      "aws s3 sync s3://tf-minecraft-${var.server_name}-files /home/ubuntu/",
+      "sudo systemctl start minecraft-forge"
     ]
     connection {
       type     = "ssh"
       user     = "ubuntu"
-      # private_key = "${file("~/.ssh/id_rsa")}"
     }
   }
 
   provisioner "remote-exec" {
     when = "destroy"
     inline = [
-      "aws s3 sync /src/minecraft-server s3://tf-minecraft-${var.server_name}-files"
+      "aws s3 sync /home/ubuntu/ s3://tf-minecraft-${var.server_name}-files"
     ]
     connection {
+      host     = "${aws_instance.server.public_ip}"
       type     = "ssh"
       user     = "ubuntu"
-      # private_key = "${file("~/.ssh/id_rsa")}"
     }
   }
-
-  # provisioner "local-exec" {
-  #   command = "echo ${aws_instance.server.public_ip} && echo ${aws_instance.server.public_ip} > ip_address.txt"
-  # }
-  
-  # provisioner "local-exec" {
-  #   command = "echo ${aws_iam_access_key.admin_user.id} && echo ${aws_iam_access_key.admin_user.id} > access-key.txt"
-  # }
-
-  # provisioner "local-exec" {
-  #   command = "echo ${aws_iam_access_key.admin_user.secret} && echo ${aws_iam_access_key.admin_user.secret} > secret-key.txt"
-  # }
-
-  # aws configure set aws_access_key_id default_access_key
-  # aws configure set aws_secret_access_key default_secret_key
-  # aws configure set region ${aws.region} # eu-central-1
 }
 
 resource "aws_s3_bucket" "server_files" {
     bucket = "tf-minecraft-${var.server_name}-files" # Only alphanumeric and hyphens
     acl    = "private"
+    force_destroy = true
 
     policy = <<EOF
 {
