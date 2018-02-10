@@ -1,5 +1,5 @@
 output "server_ip" {
-  value = "${ var.server_count > 0 ? "${join("", aws_instance.server.*.public_ip)}" : "" }"
+  value = "${compact(concat(list(""), aws_instance.server.*.public_ip))}"
 }
 
 output "s3_bucket_arn" {

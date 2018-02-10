@@ -1,6 +1,6 @@
 variable "aws_access_key" {}
 variable "aws_secret_key" {}
-variable "server_count" {}
+variable "server_online" {}
 
 module "aws-minecraft" {
   source = "./aws-minecraft"
@@ -8,7 +8,8 @@ module "aws-minecraft" {
   server_name = "blacknode"
   aws_secret_key = "${var.aws_secret_key}"
   aws_access_key = "${var.aws_access_key}"
-  server_count = "${var.server_count}"
+  server_online = "${var.server_online}"
+  aws_instance_type = "t2.medium"
 }
 
 output "minecraft_server_ip" {
