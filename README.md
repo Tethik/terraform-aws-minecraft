@@ -1,5 +1,7 @@
 # terraform-aws-minecraft
 
+Work in progress!
+
 Terraform and packer script to launch an on-demand minecraft server using aws.
 
 The terraform configs will launch an ec2 instance that can be turned on or off. An s3 bucket is created
