@@ -1,6 +1,6 @@
 # terraform-aws-minecraft
 
-Work in progress!
+⚠️ Work in progress! Beware! Read through the configurations before you attempt to use this. You've been warned. ⚠️
 
 Terraform and packer script to launch an on-demand minecraft server using aws.
 
