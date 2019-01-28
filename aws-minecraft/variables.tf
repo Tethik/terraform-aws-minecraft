@@ -1,20 +1,28 @@
 variable "server_name" {
-    type = "string"
+  type = "string"
 }
-variable "aws_access_key" {
-    type = "string"
-}
-variable "aws_secret_key" {
-    type = "string"
-}
+
 variable "server_online" {
-    type = "string"
+  type = "string"
 }
+
 variable "aws_instance_type" {
-    type = "string"
-    default = "t2.micro"
+  type    = "string"
+  default = "t2.micro"
 }
+
 variable "aws_instance_disk_size" {
-    type = "string"
-    default = "10"
+  type    = "string"
+  default = "10"
 }
+
+variable "aws_key_pair_key_name" {
+  type    = "string"
+  default = ""
+}
+
+# variable "minecraft_version" {
+#     type = "string"
+#     default = "1.12.2"
+# }
+

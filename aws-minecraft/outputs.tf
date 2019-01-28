@@ -1,5 +1,6 @@
 output "server_ip" {
-  value = "${compact(concat(list(""), aws_instance.server.*.public_ip))}"
+  depends_on = ["${aws_instance.server}"]
+  value      = ["${aws_instance.server.*.public_ip}"]
 }
 
 output "s3_bucket_arn" {
@@ -13,5 +14,3 @@ output "s3_bucket_aws_access_key" {
 output "s3_bucket_aws_secret_key" {
   value = "${aws_iam_access_key.admin_user.secret}"
 }
-
-
